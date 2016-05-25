@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import AVFoundation
+import AVFoundation.AVAudioSession
 
 
 class TalkViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
@@ -25,16 +27,21 @@ class TalkViewController: UIViewController, UITableViewDelegate, UITableViewData
         self.tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: "cell")
     }
     
-    deinit {
-        /*
-        let audioSession = AVAudioSession.sharedInstance()
-        session = nil
-        do {
-            audioSession.removeObserver(self, forKeyPath: "outputVolume")
-            try audioSession.setActive(false)
-        } catch _ {
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        var titletext = "untitled page"
+        if ((self.title) != nil){
+            titletext = self.title!
         }
-         */
+        TTS.sharedInstance.speak(titletext)
+        
+        if (index<0){
+            
+        } else {
+            let ip = NSIndexPath(forRow: index, inSection: 0)
+            tableView.deselectRowAtIndexPath(ip, animated: false)
+            index = -1
+        }
     }
     
     override func canBecomeFirstResponder() -> Bool {
@@ -49,29 +56,21 @@ class TalkViewController: UIViewController, UITableViewDelegate, UITableViewData
         //let cell:CustomCell = self.tableView.dequeueReusableCellWithIdentifier("cell")! as! CustomCell
         let cell:UITableViewCell = self.tableView.dequeueReusableCellWithIdentifier("cell")!
         cell.textLabel?.text = self.items[indexPath.row]
-        //cell.highlight?.frame = CGRectMake(0, 0, cell.frame.size.width, cell.frame.size.height)
-        //cell.highlight?.hidden = !self.selected[indexPath.row]
-        //cell.highlight(self.selected[indexPath.row])
-        //cell.highlight(selected[indexPath.row])
-        /*
-        if (selected[indexPath.row]){
-            cell.selectedBackgroundView?.hidden = false//?.backgroundColor = UIColor.blueColor()
-            
-        } else {
-            cell.selectedBackgroundView?.hidden = true//.backgroundColor = UIColor.clearColor()
-            
-        }*/
         return cell
     }
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        print("You selected cell #\(indexPath.row)!")
+        //print("You selected cell #\(indexPath.row)!")
         
         if (indexPath.row == self.items.count-1) {
             self.navigationController?.popViewControllerAnimated(true)
         } else {
+            
             let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
             let nextViewController = storyBoard.instantiateViewControllerWithIdentifier("TalkViewController") as UIViewController
+            if (index > -1){
+                nextViewController.title = items[index]
+            }
             self.navigationController?.pushViewController(nextViewController, animated: true)
         }
         
@@ -108,7 +107,8 @@ class TalkViewController: UIViewController, UITableViewDelegate, UITableViewData
             self.navigationController?.popViewControllerAnimated(true)
         } else {
             let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-            let nextViewController = storyBoard.instantiateViewControllerWithIdentifier("TalkViewController") as UIViewController
+            let nextViewController = storyBoard.instantiateViewControllerWithIdentifier("TalkViewController") as! TalkViewController
+            nextViewController.title = items[index]
             self.navigationController?.pushViewController(nextViewController, animated: true)
         }
     }
@@ -119,6 +119,8 @@ class TalkViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         let ip = NSIndexPath(forRow: index, inSection: 0)
         self.tableView.selectRowAtIndexPath(ip, animated: false, scrollPosition: UITableViewScrollPosition.Middle)
+        TTS.sharedInstance.speak(items[index])
+
 
     }
 
